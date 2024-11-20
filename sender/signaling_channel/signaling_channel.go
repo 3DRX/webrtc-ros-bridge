@@ -17,7 +17,6 @@ type Action struct {
 
 type SignalingChannel struct {
 	cfg                 *config.Config
-	topicIdx            int
 	upgrader            *websocket.Upgrader
 	conn                *websocket.Conn
 	actions             *Action
@@ -30,15 +29,13 @@ type SignalingChannel struct {
 
 func InitSignalingChannel(
 	cfg *config.Config,
-	topicIdx int,
 	sendSDPChan <-chan webrtc.SessionDescription,
 	recvSDPChan chan<- webrtc.SessionDescription,
 	sendCandidateChan <-chan webrtc.ICECandidateInit,
 	recvCandidateChan chan<- webrtc.ICECandidateInit,
 ) *SignalingChannel {
 	return &SignalingChannel{
-		cfg:      cfg,
-		topicIdx: topicIdx,
+		cfg: cfg,
 		upgrader: &websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true

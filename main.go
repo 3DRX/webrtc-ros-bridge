@@ -10,13 +10,15 @@ import (
 	send_roschannel "github.com/3DRX/webrtc-ros-bridge/sender/ros_channel"
 	send_signalingchannel "github.com/3DRX/webrtc-ros-bridge/sender/signaling_channel"
 	"github.com/pion/webrtc/v3"
+	"github.com/tiiuae/rclgo/pkg/rclgo/types"
 )
 
-func videoReceiver(cfg *config.Config, topicIdx int) {
+func receiver(cfg *config.Config) {
 	sdpChan := make(chan webrtc.SessionDescription)
 	sdpReplyChan := make(chan webrtc.SessionDescription)
 	candidateChan := make(chan webrtc.ICECandidateInit)
 	imgChan := make(chan *sensor_msgs_msg.Image)
+	topicIdx := 0 // TODO: refactor similar to sender
 	sc := recv_signalingchannel.InitSignalingChannel(
 		cfg,
 		topicIdx,
@@ -42,15 +44,14 @@ func videoReceiver(cfg *config.Config, topicIdx int) {
 	select {}
 }
 
-func videoSender(cfg *config.Config, topicIdx int) {
-	imgChan := make(chan *sensor_msgs_msg.Image)
+func sender(cfg *config.Config) {
+	messageChan := make(chan types.Message)
 	sendSDPChan := make(chan webrtc.SessionDescription)
 	recvSDPChan := make(chan webrtc.SessionDescription)
 	sendCandidateChan := make(chan webrtc.ICECandidateInit)
 	recvCandidateChan := make(chan webrtc.ICECandidateInit)
 	sc := send_signalingchannel.InitSignalingChannel(
 		cfg,
-		topicIdx,
 		sendSDPChan,
 		recvSDPChan,
 		sendCandidateChan,
@@ -61,12 +62,11 @@ func videoSender(cfg *config.Config, topicIdx int) {
 	actions := sc.GetActions()
 	rc := send_roschannel.InitROSChannel(
 		cfg,
-		topicIdx,
-		imgChan,
+		messageChan,
 	)
 	go rc.Spin()
 	pc := send_peerconnectionchannel.InitPeerConnectionChannel(
-		imgChan,
+		messageChan,
 		sendSDPChan,
 		recvSDPChan,
 		sendCandidateChan,
@@ -80,23 +80,10 @@ func videoSender(cfg *config.Config, topicIdx int) {
 func main() {
 	cfg := config.LoadCfg()
 	if cfg.Mode == "receiver" {
-		for i, t := range cfg.Topics {
-			if t.Type == "sensor_msgs/msg/Image" {
-				go videoReceiver(cfg, i)
-			} else {
-				panic("unsupported type")
-			}
-		}
+		receiver(cfg)
 	} else if cfg.Mode == "sender" {
-		for i, t := range cfg.Topics {
-			if t.Type == "sensor_msgs/msg/Image" {
-				go videoSender(cfg, i)
-			} else {
-				panic("unsupported type")
-			}
-		}
+		sender(cfg)
 	} else {
 		panic("unsupported mode")
 	}
-	select {}
 }
