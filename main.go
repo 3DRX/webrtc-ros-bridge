@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/3DRX/webrtc-ros-bridge/config"
-	sensor_msgs_msg "github.com/3DRX/webrtc-ros-bridge/rclgo_gen/sensor_msgs/msg"
 	recv_peerconnectionchannel "github.com/3DRX/webrtc-ros-bridge/receiver/peer_connection_channel"
 	recv_roschannel "github.com/3DRX/webrtc-ros-bridge/receiver/ros_channel"
 	recv_signalingchannel "github.com/3DRX/webrtc-ros-bridge/receiver/signaling_channel"
@@ -14,10 +13,10 @@ import (
 )
 
 func receiver(cfg *config.Config) {
+	messageChan := make(chan types.Message)
 	sdpChan := make(chan webrtc.SessionDescription)
 	sdpReplyChan := make(chan webrtc.SessionDescription)
 	candidateChan := make(chan webrtc.ICECandidateInit)
-	imgChan := make(chan *sensor_msgs_msg.Image)
 	topicIdx := 0 // TODO: refactor similar to sender
 	sc := recv_signalingchannel.InitSignalingChannel(
 		cfg,
@@ -31,12 +30,12 @@ func receiver(cfg *config.Config) {
 		sdpReplyChan,
 		candidateChan,
 		sc.SignalCandidate,
-		imgChan,
+		messageChan,
 	)
 	rc := recv_roschannel.InitROSChannel(
 		cfg,
 		topicIdx,
-		imgChan,
+		messageChan,
 	)
 	go sc.Spin()
 	go pc.Spin()

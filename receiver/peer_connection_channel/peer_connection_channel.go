@@ -5,10 +5,10 @@ import (
 	"log/slog"
 	"time"
 
-	sensor_msgs_msg "github.com/3DRX/webrtc-ros-bridge/rclgo_gen/sensor_msgs/msg"
 	"github.com/pion/interceptor"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v3"
+	"github.com/tiiuae/rclgo/pkg/rclgo/types"
 )
 
 type PeerConnectionChannel struct {
@@ -17,7 +17,7 @@ type PeerConnectionChannel struct {
 	candidateChan   <-chan webrtc.ICECandidateInit
 	peerConnection  *webrtc.PeerConnection
 	signalCandidate func(c webrtc.ICECandidateInit) error
-	imgChan         chan<- *sensor_msgs_msg.Image
+	messageChan     chan<- types.Message
 }
 
 func registerHeaderExtensionURI(m *webrtc.MediaEngine, uris []string) {
@@ -40,7 +40,7 @@ func InitPeerConnectionChannel(
 	sdpReplyChan chan<- webrtc.SessionDescription,
 	candidateChan <-chan webrtc.ICECandidateInit,
 	signalCandidate func(c webrtc.ICECandidateInit) error,
-	imgChan chan<- *sensor_msgs_msg.Image,
+	messageChan chan<- types.Message,
 ) *PeerConnectionChannel {
 	m := &webrtc.MediaEngine{}
 	// Register VP8
@@ -84,7 +84,7 @@ func InitPeerConnectionChannel(
 		candidateChan:   candidateChan,
 		peerConnection:  peerConnection,
 		signalCandidate: signalCandidate,
-		imgChan:         imgChan,
+		messageChan:     messageChan,
 	}
 }
 
@@ -117,7 +117,7 @@ func handleSignalingMessage(pc *PeerConnectionChannel) {
 }
 
 func (pc *PeerConnectionChannel) Spin() {
-	webmSaver := newWebmSaver(pc.imgChan)
+	webmSaver := newWebmSaver(pc.messageChan)
 	_, err := pc.peerConnection.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo,
 		webrtc.RTPTransceiverInit{
 			Direction: webrtc.RTPTransceiverDirectionRecvonly,
