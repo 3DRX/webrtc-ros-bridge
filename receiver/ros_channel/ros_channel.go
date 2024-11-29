@@ -9,27 +9,45 @@ import (
 	"github.com/3DRX/webrtc-ros-bridge/config"
 	sensor_msgs_msg "github.com/3DRX/webrtc-ros-bridge/rclgo_gen/sensor_msgs/msg"
 	"github.com/tiiuae/rclgo/pkg/rclgo"
+	"github.com/tiiuae/rclgo/pkg/rclgo/types"
 )
 
 type ROSChannel struct {
-	imgChan  <-chan *sensor_msgs_msg.Image
-	cfg      *config.Config
-	topicIdx int
+	chanDispatcher func()
+	imgChan        <-chan *sensor_msgs_msg.Image
+	sensorChan     <-chan types.Message
+	cfg            *config.Config
+	topicIdx       int
 }
 
 func InitROSChannel(
 	cfg *config.Config,
 	topicIdx int,
-	imgChan <-chan *sensor_msgs_msg.Image,
+	messageChan <-chan types.Message,
 ) *ROSChannel {
+	imgChan := make(chan *sensor_msgs_msg.Image, 10)
+	sensorChan := make(chan types.Message, 10)
 	return &ROSChannel{
-		cfg:      cfg,
-		topicIdx: topicIdx,
-		imgChan:  imgChan,
+		cfg:        cfg,
+		topicIdx:   topicIdx,
+		imgChan:    imgChan,
+		sensorChan: sensorChan,
+		chanDispatcher: func() {
+			for {
+				msg := <-messageChan
+				switch msg.(type) {
+				case *sensor_msgs_msg.Image:
+					imgChan <- msg.(*sensor_msgs_msg.Image)
+				default:
+					sensorChan <- msg
+				}
+			}
+		},
 	}
 }
 
 func (r *ROSChannel) Spin() {
+
 	err := rclgo.Init(nil)
 	if err != nil {
 		panic(err)

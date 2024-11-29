@@ -16,6 +16,7 @@ import (
 	"github.com/pion/rtp"
 	"github.com/pion/rtp/codecs"
 	"github.com/pion/webrtc/v3/pkg/media/samplebuilder"
+	"github.com/tiiuae/rclgo/pkg/rclgo/types"
 )
 
 type WebmSaver struct {
@@ -26,10 +27,10 @@ type WebmSaver struct {
 	lastVideoTimestamp uint32
 	codecCtx           C.vpx_codec_ctx_t
 	codecCreated       bool
-	imgChan            chan<- *sensor_msgs_msg.Image
+	imgChan            chan<- types.Message
 }
 
-func newWebmSaver(imgChan chan<- *sensor_msgs_msg.Image) *WebmSaver {
+func newWebmSaver(imgChan chan<- types.Message) *WebmSaver {
 	return &WebmSaver{
 		vp8Builder:       samplebuilder.New(200, &codecs.VP8Packet{}, 90000),
 		h264JitterBuffer: jitterbuffer.New(),
@@ -86,8 +87,6 @@ func (s *WebmSaver) PushVP8(rtpPacket *rtp.Packet) {
 		s.imgChan <- &ros_img
 	}
 }
-
-func vpxToROSImage()
 
 func (s *WebmSaver) InitWriter(width, height int) {
 	if errCode := C.init_decoder(&s.codecCtx, C.uint(width), C.uint(height)); errCode != 0 {
