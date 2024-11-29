@@ -88,8 +88,6 @@ func (s *WebmSaver) PushVP8(rtpPacket *rtp.Packet) {
 	}
 }
 
-func vpxToROSImage()
-
 func (s *WebmSaver) InitWriter(width, height int) {
 	if errCode := C.init_decoder(&s.codecCtx, C.uint(width), C.uint(height)); errCode != 0 {
 		slog.Error("failed to initialize decoder", "error", errCode)
