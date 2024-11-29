@@ -35,6 +35,7 @@ func isTopicNameValid(topic_name *string) bool {
 
 func isValidIp(addr *string) bool {
 	// Try to separate hostname and port
+	host, _, err := net.SplitHostPort(*addr)
 	if err != nil {
 		// If splitting fails, assume the entire string is a host
 		host = *addr
