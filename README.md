@@ -1,5 +1,7 @@
 # webrtc-ros-bridge
 
+![Tests](https://github.com/3DRX/webrtc-ros-bridge/actions/workflows/test.yml/badge.svg)
+
 ## Prerequisites
 
 - ROS2 humble, merge installed
@@ -7,6 +9,8 @@
 with command `colcon build --merge-install`)
 - libvpx-dev (deb package)
 - `go mod tidy` to get all go deps
+    - Note that it's expected to see errors of not finding package `github.com/3DRX/webrtc-ros-bridge/rclgo_gen`,
+    since it's part of the codegen using `github.com/tiiuae/rclgo`, you can just ignore it.
 
 ## Build
 
