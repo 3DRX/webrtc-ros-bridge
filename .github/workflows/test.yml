@@ -36,6 +36,7 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Source ROS
+      shell: bash
       run: |
         source /opt/ros/humble/setup.bash
 

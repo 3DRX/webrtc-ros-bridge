@@ -1,6 +1,6 @@
 # webrtc-ros-bridge
 
-![Tests](https://github.com/{owner}/{repo}/actions/workflows/test.yml/badge.svg)
+![Tests](https://github.com/3DRX/webrtc-ros-bridge/actions/workflows/test.yml/badge.svg)
 
 ## Prerequisites
 
