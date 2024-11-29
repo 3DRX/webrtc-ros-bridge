@@ -44,4 +44,4 @@ jobs:
       run: go mod download
 
     - name: Run tests
-      run: make test
+      run: go test `go list ./... | grep -v "/rclgo_gen"`
