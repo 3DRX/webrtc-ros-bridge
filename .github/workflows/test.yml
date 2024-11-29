@@ -36,12 +36,13 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Source ROS
-      shell: bash
       run: |
-        source /opt/ros/humble/setup.bash
 
     - name: Install Go dependencies
       run: go mod download
 
     - name: Run tests
-      run: go test `go list ./... | grep -v "/rclgo_gen"`
+      shell: bash
+      run: |
+        source /opt/ros/humble/setup.bash
+        make test
