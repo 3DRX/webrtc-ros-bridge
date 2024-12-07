@@ -112,7 +112,7 @@ func checkCfg(c *Config) error {
 		return fmt.Errorf("invalid ipv4 addr \"" + c.Addr + "\"")
 	}
 	for _, topic := range c.Topics {
-		if !isTopicNameValid(&topic.NameIn) || isTopicNameValid(&topic.NameOut) {
+		if !isTopicNameValid(&topic.NameIn) || !isTopicNameValid(&topic.NameOut) {
 			return fmt.Errorf("wrong topic name format: \"" + topic.NameIn + "\" or \"" + topic.NameOut + "\"")
 		}
 		switch topic.Type {
