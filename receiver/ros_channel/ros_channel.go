@@ -47,6 +47,7 @@ func InitROSChannel(
 }
 
 func (r *ROSChannel) Spin() {
+	go r.chanDispatcher()
 
 	err := rclgo.Init(nil)
 	if err != nil {
