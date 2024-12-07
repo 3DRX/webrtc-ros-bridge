@@ -10,7 +10,7 @@ webrtc-ros-bridge-client: receiver/peer_connection_channel/libvp8decoder.so rclg
 receiver/peer_connection_channel/libvp8decoder.so: receiver/peer_connection_channel/vp8_decoder.c receiver/peer_connection_channel/vp8_decoder.h
 	cd receiver/peer_connection_channel && gcc -shared -o libvp8decoder.so -fPIC vp8_decoder.c $(pkg-config --cflags --libs vpx) $(CFLAGS) $(LDFLAGS)
 
-receiver/ros_channel/msgs cgo-flags.env:
+rclgo_gen cgo-flags.env:
 	go run github.com/tiiuae/rclgo/cmd/rclgo-gen generate -d rclgo_gen
 
 test: rclgo_gen cgo-flags.env
