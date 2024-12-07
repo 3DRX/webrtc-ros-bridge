@@ -70,3 +70,4 @@ the config is load from a json file specified by `wrb <path_to.json>`.
 - [webrtc_ros](https://github.com/RobotWebTools/webrtc_ros).
 Infact, the receiver of this project is compatable with webrtc_ros server node.
 - [ros2](https://github.com/ros2)
+- [tiiuae/rclgo](https://github.com/tiiuae/rclgo). The ROS client library for golang.
