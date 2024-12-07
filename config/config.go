@@ -11,6 +11,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/3DRX/webrtc-ros-bridge/consts"
 )
 
 type TopicConfig struct {
@@ -33,7 +35,7 @@ func isTopicNameValid(topic_name *string) bool {
 	return re.MatchString(*topic_name)
 }
 
-func isValidIp(addr *string) bool {
+func isValidAddr(addr *string) bool {
 	// Try to separate hostname and port
 	host, _, err := net.SplitHostPort(*addr)
 	if err != nil {
@@ -103,30 +105,21 @@ func isValidHostname(host string) bool {
 }
 
 func checkCfg(c *Config) error {
-	if c == nil {
-		return fmt.Errorf("get a null pointer!")
-	}
-	res := true
-	// Mode
-	res = res && (c.Mode == "sender" || c.Mode == "receiver")
-	if res == false {
+	if !(c.Mode == "sender" || c.Mode == "receiver") {
 		return fmt.Errorf("wrong Mode syntax, expected \"sender\" or \"receiver\", but find \"" + c.Mode + "\"")
 	}
-	// ip addr
-	res = res && isValidIp(&c.Addr)
-	if res == false {
+	if !isValidAddr(&c.Addr) {
 		return fmt.Errorf("invalid ipv4 addr \"" + c.Addr + "\"")
 	}
-	// Topic
 	for _, topic := range c.Topics {
-		res = res && isTopicNameValid(&(topic.NameIn))
-		res = res && isTopicNameValid(&(topic.NameOut))
-		if res == false {
+		if !isTopicNameValid(&topic.NameIn) || isTopicNameValid(&topic.NameOut) {
 			return fmt.Errorf("wrong topic name format: \"" + topic.NameIn + "\" or \"" + topic.NameOut + "\"")
 		}
-		res = res && (topic.Type == "sensor_msgs/msg/Image")
-		if !res {
-			return fmt.Errorf("wrong topic msg type, expected \"sensor_msgs/msg/Image\", but find \"" + topic.Type + "\"")
+		switch topic.Type {
+		case consts.MSG_IMAGE, consts.MSG_LASER_SCAN:
+			// check passed
+		default:
+			return fmt.Errorf("unsupported topic type: \"" + topic.Type + "\"")
 		}
 	}
 	return nil

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/3DRX/webrtc-ros-bridge/config"
+	"github.com/3DRX/webrtc-ros-bridge/consts"
 	sensor_msgs_msg "github.com/3DRX/webrtc-ros-bridge/rclgo_gen/sensor_msgs/msg"
 	"github.com/tiiuae/rclgo/pkg/rclgo"
 	"github.com/tiiuae/rclgo/pkg/rclgo/types"
@@ -33,7 +34,7 @@ func InitROSChannel(
 	subs := make([]*rclgo.Subscription, len(cfg.Topics))
 	for i, topic := range cfg.Topics {
 		switch topic.Type {
-		case "sensor_msgs/msg/Image":
+		case consts.MSG_IMAGE:
 			imgSub, err := sensor_msgs_msg.NewImageSubscription(
 				node,
 				"/"+cfg.Topics[i].NameIn,
@@ -46,7 +47,7 @@ func InitROSChannel(
 			if err != nil {
 				panic(err)
 			}
-		case "sensor_msgs/msg/LaserScan":
+		case consts.MSG_LASER_SCAN:
 			laserScanSub, err := sensor_msgs_msg.NewLaserScanSubscription(
 				node,
 				"/"+cfg.Topics[i].NameIn,
