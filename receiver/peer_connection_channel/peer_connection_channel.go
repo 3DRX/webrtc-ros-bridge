@@ -5,9 +5,11 @@ import (
 	"log/slog"
 	"time"
 
+	sensor_msgs_msg "github.com/3DRX/webrtc-ros-bridge/rclgo_gen/sensor_msgs/msg"
 	"github.com/pion/interceptor"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v3"
+	"github.com/tiiuae/rclgo/pkg/rclgo"
 	"github.com/tiiuae/rclgo/pkg/rclgo/types"
 )
 
@@ -155,6 +157,26 @@ func (pc *PeerConnectionChannel) Spin() {
 			}
 			webmSaver.PushVP8(rtp)
 		}
+	})
+	pc.peerConnection.OnDataChannel(func(d *webrtc.DataChannel) {
+		d.OnMessage(func(msg webrtc.DataChannelMessage) {
+			serializedMsg := msg.Data
+			sensorMsg, err := rclgo.Deserialize(serializedMsg, sensor_msgs_msg.LaserScanTypeSupport)
+			if err != nil {
+				slog.Error("failed to deserialize sensor message", "error", err)
+				return
+			}
+			laserScanMsg, ok := sensorMsg.(*sensor_msgs_msg.LaserScan)
+			if !ok {
+				slog.Error("failed to cast sensor message to LaserScan")
+				return
+			}
+			slog.Info("datachannel message", "frame ID", laserScanMsg.Header.FrameId)
+		})
+		d.OnOpen(func() {
+			slog.Info("datachannel open", "label", d.Label(), "ID", d.ID())
+			d.SendText("Hello from receiver!")
+		})
 	})
 	go handleSignalingMessage(pc)
 }

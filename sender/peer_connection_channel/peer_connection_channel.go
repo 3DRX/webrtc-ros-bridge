@@ -13,6 +13,7 @@ import (
 	"github.com/pion/mediadevices/pkg/codec/vpx"
 	"github.com/pion/mediadevices/pkg/prop"
 	"github.com/pion/webrtc/v3"
+	"github.com/tiiuae/rclgo/pkg/rclgo"
 	"github.com/tiiuae/rclgo/pkg/rclgo/types"
 )
 
@@ -163,6 +164,27 @@ func (pc *PeerConnectionChannel) handleRemoteICECandidate() {
 
 func (pc *PeerConnectionChannel) Spin() {
 	go pc.chanDispatcher()
+
+	datachannel, err := pc.peerConnection.CreateDataChannel("data", nil)
+	if err != nil {
+		panic(err)
+	}
+	datachannel.OnOpen(func() {
+		slog.Info("datachannel open", "label", datachannel.Label(), "ID", datachannel.ID())
+		for {
+			sensorMsg := <-pc.sensorChan
+			serializedMsg, err := rclgo.Serialize(sensorMsg)
+			if err != nil {
+				slog.Error("failed to serialize sensor message", "error", err)
+				continue
+			}
+			datachannel.Send(serializedMsg)
+		}
+	})
+	datachannel.OnMessage(func(msg webrtc.DataChannelMessage) {
+		slog.Info("datachannel message", "data", string(msg.Data))
+	})
+
 	offer, err := pc.peerConnection.CreateOffer(nil)
 	if err != nil {
 		panic(err)
